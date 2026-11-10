@@ -1,0 +1,11 @@
+{
+  "name": "AM Studio - Video Editor",
+  "short_name": "AM Studio",
+  "description": "Editor video percuma untuk Android",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#101116",
+  "theme_color": "#101116",
+  "orientation": "portrait",
+  "icons": []
+}

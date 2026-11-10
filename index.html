@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101116">
+<meta name="description" content="AM Studio - editor video percuma untuk Android">
+<link rel="manifest" href="manifest.webmanifest">
+<title>AM Studio</title>
+<style>
+:root{--bg:#101116;--panel:#191b24;--panel2:#222532;--line:#303342;--text:#f5f6fb;--muted:#9da3b5;--accent:#9b7cff;--cyan:#57d6d0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif;padding-bottom:28px}
+header{position:sticky;top:0;z-index:5;background:#101116ed;border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(12px)}
+.logo{font-weight:850;letter-spacing:.3px;font-size:19px}.logo span{color:var(--accent)}.pill{font-size:11px;color:#c9bbff;border:1px solid #594a8b;padding:4px 8px;border-radius:99px}
+main{max-width:850px;margin:auto;padding:16px;display:grid;gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px}
+h2{font-size:15px;margin:0 0 12px}p{color:var(--muted);font-size:13px;line-height:1.5;margin:7px 0}
+.preview{background:#08090d;border-radius:13px;overflow:hidden;display:grid;place-items:center;min-height:210px;position:relative}
+video{width:100%;max-height:420px;display:block;background:#08090d}
+.placeholder{padding:34px 18px;text-align:center;color:var(--muted)}.placeholder b{display:block;color:#fff;margin:8px}
+button,.filebtn{border:0;border-radius:12px;background:var(--accent);color:#100d1b;font-weight:750;padding:12px 14px;font-size:14px;cursor:pointer;display:inline-flex;justify-content:center;align-items:center;gap:7px}
+button.secondary,.filebtn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+button:disabled{opacity:.45;cursor:not-allowed}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions>*{flex:1}
+input[type=file]{display:none}label{font-size:12px;color:var(--muted);display:block;margin:12px 0 6px}
+input[type=range]{width:100%;accent-color:var(--accent)}input[type=text],select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px;color:var(--text);font:inherit}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.time{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.filterrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.filterrow button{font-size:12px;padding:10px 5px}
+.status{font-size:12px;color:var(--cyan);min-height:18px;margin-top:8px}.progress{height:6px;background:#303342;border-radius:99px;overflow:hidden;margin-top:8px}.progress div{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--cyan));transition:width .2s}
+small{color:var(--muted);line-height:1.5;display:block}.foot{text-align:center;color:var(--muted);font-size:11px;padding:8px}
+@media(min-width:700px){main{grid-template-columns:1.2fr .8fr}.wide{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header><div class="logo">AM <span>STUDIO</span></div><div class="pill">FREE VIDEO EDITOR</div></header>
+<main>
+<section class="card">
+<h2>Pratonton video</h2>
+<div class="preview" id="previewBox">
+<div class="placeholder" id="placeholder">▣<b>Mulakan projek video</b>Pilih video daripada galeri telefon anda.</div>
+<video id="video" playsinline controls hidden></video>
+</div>
+<div class="actions">
+<label class="filebtn" for="file" style="margin:0">＋ Import video</label>
+<input id="file" type="file" accept="video/*">
+<button class="secondary" id="play" disabled>▶ Main</button>
+</div>
+<div class="status" id="fileStatus">Belum ada video dipilih.</div>
+</section>
+<section class="card">
+<h2>Potong video</h2>
+<label>Mula</label><input id="start" type="range" min="0" max="100" value="0" step=".1" disabled>
+<div class="time"><span id="startLabel">00:00</span><span id="durationLabel">Durasi: --:--</span></div>
+<label>Akhir</label><input id="end" type="range" min="0" max="100" value="100" step=".1" disabled>
+<div class="time"><span>Hujung klip</span><span id="endLabel">--:--</span></div>
+<p>Laraskan titik mula dan akhir untuk memilih bahagian video yang hendak dieksport.</p>
+</section>
+<section class="card">
+<h2>Teks pada video</h2>
+<label>Masukkan teks</label><input id="overlayText" type="text" placeholder="Contoh: Kenangan indah ✨" maxlength="80">
+<div class="grid">
+<div><label>Saiz teks</label><select id="fontSize"><option value="24">Kecil</option><option value="34" selected>Sederhana</option><option value="46">Besar</option></select></div>
+<div><label>Posisi</label><select id="position"><option value="top">Atas</option><option value="middle" selected>Tengah</option><option value="bottom">Bawah</option></select></div>
+</div>
+</section>
+<section class="card">
+<h2>Gaya visual</h2>
+<div class="filterrow">
+<button class="secondary" data-filter="none">Original</button><button class="secondary" data-filter="mono">B&W</button><button class="secondary" data-filter="warm">Warm</button>
+</div>
+<label>Nisbah pratonton / eksport</label>
+<select id="ratio"><option value="source">Asal</option><option value="9:16">9:16 · TikTok / Reels</option><option value="16:9">16:9 · YouTube</option><option value="1:1">1:1 · Square</option></select>
+</section>
+<section class="card">
+<h2>Eksport video</h2>
+<div class="grid">
+<div><label>Resolusi</label><select id="resolution"><option value="720">720p</option><option value="1080">1080p (jika disokong)</option></select></div>
+<div><label>Kualiti</label><select id="quality"><option value="5">Standard</option><option value="8" selected>Tinggi</option><option value="12">Sangat tinggi</option></select></div>
+</div>
+<div class="actions"><button id="export" disabled>⇩ Eksport video</button></div>
+<div class="progress"><div id="bar"></div></div><div class="status" id="exportStatus">Video akan dieksport dalam format WebM.</div>
+<div class="actions"><a id="download" hidden><button class="secondary">Muat turun hasil</button></a></div>
+</section>
+<section class="card wide">
+<h2>Nota versi pertama</h2>
+<small>AM Studio MVP menyokong import, pratonton, trim, teks, tiga gaya visual dan eksport WebM melalui pelayar yang serasi. Eksport berjalan dalam masa nyata. Jangan tutup tab semasa eksport. Ciri lanjutan seperti berbilang trek, transition, keyframe dan MP4 memerlukan pembangunan seterusnya.</small>
+</section>
+</main>
+<div class="foot">AM Studio · Dibina untuk pencipta kreatif</div>
+<script>
+const $=id=>document.getElementById(id);
+const video=$('video');let fileUrl=null,filter='none',duration=0,exportUrl=null;
+const fmt=s=>{s=Math.max(0,s||0);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')};
+$('file').addEventListener('change',e=>{
+ const f=e.target.files[0];if(!f)return;
+ if(fileUrl)URL.revokeObjectURL(fileUrl);fileUrl=URL.createObjectURL(f);
+ video.src=fileUrl;video.hidden=false;$('placeholder').hidden=true;$('fileStatus').textContent=f.name;
+ video.onloadedmetadata=()=>{duration=video.duration;$('start').disabled=false;$('end').disabled=false;$('export').disabled=false;$('play').disabled=false;$('start').max=duration;$('end').max=duration;$('end').value=duration;$('durationLabel').textContent='Durasi: '+fmt(duration);$('endLabel').textContent=fmt(duration)};
+});
+$('play').onclick=()=>video.paused?video.play():video.pause();
+$('start').oninput=()=>{$('startLabel').textContent=fmt(+$('start').value);if(+$('start').value>=+$('end').value)$('end').value=$('start').value};
+$('end').oninput=()=>{$('endLabel').textContent=fmt(+$('end').value);if(+$('end').value<=+$('start').value)$('start').value=$('end').value};
+document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.style.outline=x===b?'2px solid #9b7cff':'none');applyFilter()});
+function applyFilter(){video.style.filter=filter==='mono'?'grayscale(1)':filter==='warm'?'sepia(.35) saturate(1.25)':'none'}
+$('export').onclick=async()=>{
+ if(!video.src||!duration)return;
+ const btn=$('export');btn.disabled=true;$('exportStatus').textContent='Menyediakan eksport...';$('bar').style.width='0%';
+ const start=+$('start').value,end=+$('end').value;
+ const maxH=+$('resolution').value;let w=video.videoWidth,h=video.videoHeight;
+ const ratio=$('ratio').value;
+ if(ratio!=='source'){const [rw,rh]=ratio.split(':').map(Number);const ar=rw/rh;if(w/h>ar)w=Math.round(h*ar);else h=Math.round(w/ar)}
+ const scale=Math.min(1,maxH/h);w=Math.max(2,Math.round(w*scale/2)*2);h=Math.max(2,Math.round(h*scale/2)*2);
+ const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');
+ const stream=canvas.captureStream(30);
+ let audioStream=null;
+ try{audioStream=video.captureStream?video.captureStream():video.mozCaptureStream?.();audioStream?.getAudioTracks().forEach(t=>stream.addTrack(t))}catch(e){}
+ const mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
+ if(!mime){$('exportStatus').textContent='Pelayar ini tidak menyokong eksport WebM. Cuba Chrome terkini.';btn.disabled=false;return}
+ const chunks=[];let recorder;
+ try{recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond: +$('quality').value*1000000})}catch(e){$('exportStatus').textContent='Tidak dapat memulakan eksport pada peranti ini.';btn.disabled=false;return}
+ recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+ recorder.onerror=()=>{$('exportStatus').textContent='Eksport gagal. Cuba resolusi lebih rendah.';btn.disabled=false};
+ recorder.onstop=()=>{
+  const blob=new Blob(chunks,{type:mime});if(exportUrl)URL.revokeObjectURL(exportUrl);exportUrl=URL.createObjectURL(blob);
+  const a=$('download');a.href=exportUrl;a.download='AM-Studio-Export.webm';a.hidden=false;
+  $('exportStatus').textContent='Selesai! Saiz fail: '+(blob.size/1048576).toFixed(1)+' MB. Tekan Muat turun hasil.';
+  $('bar').style.width='100%';btn.disabled=false;stream.getTracks().forEach(t=>t.stop());
+ };
+ const draw=()=>{
+  if(recorder.state!=='recording')return;
+  ctx.filter=filter==='mono'?'grayscale(1)':filter==='warm'?'sepia(.35) saturate(1.25)':'none';
+  ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);
+  const ar=video.videoWidth/video.videoHeight,tar=w/h;let dw=w,dh=h,dx=0,dy=0;
+  if(ar>tar){dh=h;dw=h*ar;dx=(w-dw)/2}else{dw=w;dh=w/ar;dy=(h-dh)/2}
+  ctx.drawImage(video,dx,dy,dw,dh);ctx.filter='none';
+  const txt=$('overlayText').value.trim();
+  if(txt){const fs=+$('fontSize').value*scale;ctx.font='bold '+fs+'px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';const y=$('position').value==='top'?h*.12:$('position').value==='bottom'?h*.88:h*.5;ctx.lineWidth=Math.max(2,fs*.12);ctx.strokeStyle='rgba(0,0,0,.75)';ctx.fillStyle='#fff';ctx.strokeText(txt,w/2,y,w*.9);ctx.fillText(txt,w/2,y,w*.9)}
+  const p=Math.max(0,Math.min(1,(video.currentTime-start)/(end-start)));$('bar').style.width=(p*100).toFixed(1)+'%';
+  $('exportStatus').textContent='Sedang mengeksport... '+Math.round(p*100)+'%';
+  if(video.currentTime>=end||video.ended){video.pause();if(recorder.state==='recording')recorder.stop();return}
+  requestAnimationFrame(draw);
+ };
+ video.pause();video.currentTime=start;
+ await new Promise(resolve=>video.addEventListener('seeked',resolve,{once:true}));
+ recorder.start(250);video.play();requestAnimationFrame(draw);
+};
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
